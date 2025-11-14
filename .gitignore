@@ -1,0 +1,19 @@
+# Genel node_modules klasörlerini ignore et
+backend/node_modules/
+frontend/node_modules/
+
+# Ortak lock dosyaları
+backend/package-lock.json
+frontend/package-lock.json
+
+# Ortak build çıktıları
+frontend/build/
+backend/dist/
+
+# Ortak environment dosyaları
+backend/.env
+frontend/.env
+
+# Mac ve VSCode gibi sistem dosyaları
+.DS_Store
+.vscode/
