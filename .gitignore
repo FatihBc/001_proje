@@ -2,6 +2,19 @@
 backend/node_modules/
 frontend/node_modules/
 
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+dist
+dist-ssr
+*.local
+
 # Ortak lock dosyaları
 backend/package-lock.json
 frontend/package-lock.json
@@ -15,5 +28,12 @@ backend/.env
 frontend/.env
 
 # Mac ve VSCode gibi sistem dosyaları
+.vscode/*
+!.vscode/extensions.json
+.idea
 .DS_Store
-.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

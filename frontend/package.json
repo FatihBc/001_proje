@@ -3,16 +3,29 @@
     "version": "1.0.0",
     "private": true,
     "dependencies": {
+        "@babel/runtime": "^7.28.4",
+        "@reduxjs/toolkit": "^2.10.1",
+        "@tailwindcss/postcss": "^4.1.17",
+        "@tailwindcss/vite": "^4.1.17",
+        "ajv": "^6.12.6",
+        "ajv-keywords": "^3.5.2",
         "axios": "^1.13.2",
+        "fuse.js": "^7.1.0",
+        "has-symbols": "^1.1.0",
+        "i18next": "^25.6.2",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
-        "react-scripts": "5.0.1"
+        "react-i18next": "^16.3.3",
+        "react-icons": "^5.5.0",
+        "react-redux": "^9.2.0",
+        "react-router-dom": "^7.9.6",
+        "redux-logger": "^3.0.6",
+        "vite": "^6.4.1"
     },
     "scripts": {
-        "start": "react-scripts start",
-        "build": "react-scripts build",
-        "test": "react-scripts test",
-        "eject": "react-scripts eject"
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview"
     },
     "eslintConfig": {
         "extends": [
@@ -32,9 +45,15 @@
             "last 1 safari version"
         ]
     },
-    "main": "temp.js",
     "keywords": [],
     "author": "",
     "license": "ISC",
-    "description": ""
+    "description": "",
+    "devDependencies": {
+        "@vitejs/plugin-react": "^5.1.1",
+        "autoprefixer": "^10.4.22",
+        "postcss": "^8.5.6",
+        "tailwindcss": "^4.1.17",
+        "typescript": "^5.9.3"
+    }
 }
