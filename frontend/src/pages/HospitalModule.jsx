@@ -28,13 +28,13 @@ export default function HospitalModule() {
 
       {/* Navigation Tabs */}
       <nav className="mb-6 flex gap-4">
-        <NavLink to="admin" className="hover:underline">
+        <NavLink to="/hospital/admin" className="hover:underline">
           Yönetici Modülü
         </NavLink>
-        <NavLink to="doctors" className="hover:underline">
+        <NavLink to="/hospital/doctors" className="hover:underline">
           Doktor Listesi
         </NavLink>
-        <NavLink to="doctor-researchs" className="hover:underline">
+        <NavLink to="/hospital/doctor-researchs" className="hover:underline">
           Doctor Researchs
         </NavLink>
       </nav>
