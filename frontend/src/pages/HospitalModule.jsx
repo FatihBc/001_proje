@@ -1,103 +1,91 @@
 import React from "react";
-import { NavLink, Routes, Route } from "react-router-dom";
+import { NavLink, Routes, Route, Navigate } from "react-router-dom";
 import { useTheme } from "../context/useTheme.js";
 
-// HospitalModule altındaki componentler
-import AddDepartmentForm from "../components/HospitalModule/AddDepartmentForm.jsx";
-import AddDoctorForm from "../components/HospitalModule/AddDoctorForm.jsx";
-import AddLocationForm from "../components/HospitalModule/AddLocationForm.jsx";
+// Yeni modüller
+import AdminModule from "../components/HospitalModule/AdminModule.jsx";
 import DoctorList from "../components/HospitalModule/DoctorList.jsx";
-import AddResearchForm from "../components/HospitalModule/AddResearchForm.jsx";
-import ResearchContainer from "../components/HospitalModule/ResearchContainer.jsx";
+import ResearchModule from "../components/HospitalModule/ResearchModule.jsx";
 
 export default function HospitalModule() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
-  const containerClass = `hospital-module container py-4 ${
-    isDark ? "bg-[#242424] text-white" : "bg-[#ecf3f4] text-black"
-  }`;
+  const pageBg = isDark ? "bg-[#242424] text-white" : "bg-[#ecf3f4] text-black";
+  const cardBg = isDark
+    ? "bg-[#1e1e1e] border-gray-700"
+    : "bg-gray-50 border-gray-200";
+  const titleBg = isDark
+    ? "bg-[#0a3c4a] text-white"
+    : "bg-[#094857] text-white";
+  const pageClass = `min-h-screen md:px-8 lg:px-16 ${pageBg}`;
+  const activeLinkBg = isDark ? "bg-[#1e1e1e]" : "bg-gray-50";
 
-  const sectionTitleClass = `text-2xl font-semibold mb-4 ${
-    isDark ? "text-white" : "text-[#094857]"
-  }`;
+  const getLinkClass = (isActive) => {
+    return isActive
+      ? `block px-3 py-2 transition-all duration-200 ease-in-out border-l-8 ${activeLinkBg} border-[#0a3c4a] font-semibold rounded-l-none rounded-r-md shadow-md scale-[1.02]`
+      : `block px-3 py-2 transition-all duration-200 ease-in-out border-l-4 ${
+          isDark
+            ? "hover:bg-[#333] text-gray-300"
+            : "hover:bg-gray-200 text-gray-700"
+        } rounded-md hover:scale-[1.01]`;
+  };
+
+  const navItems = [
+    { id: 1, title: "Yönetici Modül", path: "admin" },
+    { id: 2, title: "Doktor Listesi", path: "doctors" },
+    { id: 3, title: "Araştırma Listesi", path: "researchs" },
+  ];
 
   return (
-    <div className={containerClass}>
-      <h1 className="mb-4 text-3xl font-bold">Hospital Module</h1>
+    <div className={pageClass}>
+      {/* Üst başlık barı */}
+      <div className={`text-lg text-center p-2 rounded-lg mb-4 ${titleBg}`}>
+        Hospital Module
+      </div>
 
-      {/* Navigation Tabs */}
-      <nav className="mb-6 flex gap-4">
-        <NavLink to="/hospital/admin" className="hover:underline">
-          Yönetici Modülü
-        </NavLink>
-        <NavLink to="/hospital/doctors" className="hover:underline">
-          Doktor Listesi
-        </NavLink>
-        <NavLink to="/hospital/doctor-researchs" className="hover:underline">
-          Doctor Researchs
-        </NavLink>
-      </nav>
+      <div className="flex sm:flex-row gap-4 sm:gap-8">
+        {/* Sidebar */}
+        <div className="hidden sm:block w-64">
+          <ul className="space-y-2">
+            {navItems.map((item) => (
+              <li key={item.id} className="mb-2">
+                <NavLink
+                  to={`/hospital/${item.path}`}
+                  className={({ isActive }) => getLinkClass(isActive)}
+                >
+                  {item.title}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-      {/* Nested Routes */}
-      <Routes>
-        {/* Yönetici Modülü */}
-        <Route
-          path="admin"
-          element={
-            <div>
-              <h2 className={sectionTitleClass}>Yönetici Modülü</h2>
-              <section className="mb-6">
-                <h3 className="text-lg font-semibold mb-2">Lokasyon Ekle</h3>
-                <AddLocationForm />
-              </section>
-              <section className="mb-6">
-                <h3 className="text-lg font-semibold mb-2">Departman Ekle</h3>
-                <AddDepartmentForm />
-              </section>
-              <section className="mb-6">
-                <h3 className="text-lg font-semibold mb-2">Doktor Ekle</h3>
-                <AddDoctorForm />
-              </section>
-            </div>
-          }
-        />
-
-        {/* Doktor Listesi */}
-        <Route
-          path="doctors"
-          element={
-            <div>
-              <h2 className={sectionTitleClass}>Doktor Listesi</h2>
-              <DoctorList />
-            </div>
-          }
-        />
-
-        {/* Doctor Researchs */}
-        <Route
-          path="doctor-researchs"
-          element={
-            <div>
-              <h2 className={sectionTitleClass}>Doctor Researchs</h2>
-              <div className="flex flex-col sm:flex-row gap-6">
-                {/* Solda ekleme */}
-                <div className="sm:w-[40%] w-full">
-                  <h3 className="text-lg font-semibold mb-2">Araştırma Ekle</h3>
-                  <AddResearchForm />
-                </div>
-                {/* Sağda listeleme */}
-                <div className="sm:w-[60%] w-full">
-                  <h3 className="text-lg font-semibold mb-2 text-center">
-                    Araştırma Listesi
-                  </h3>
-                  <ResearchContainer />
-                </div>
-              </div>
-            </div>
-          }
-        />
-      </Routes>
+        {/* Content */}
+        <main className="w-full">
+          <Routes>
+            <Route path="/" element={<Navigate to="admin" />} />
+            <Route
+              path="admin"
+              element={
+                <AdminModule sectionTitleClass="text-2xl font-semibold mb-4" />
+              }
+            />
+            <Route
+              path="doctors"
+              element={
+                <DoctorList sectionTitleClass="text-2xl font-semibold mb-4" />
+              }
+            />
+            <Route
+              path="researchs"
+              element={
+                <ResearchModule sectionTitleClass="text-2xl font-semibold mb-4" />
+              }
+            />
+          </Routes>
+        </main>
+      </div>
     </div>
   );
 }
