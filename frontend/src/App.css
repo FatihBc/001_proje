@@ -26,6 +26,10 @@ body {
   max-width: 2000px
 }
 
+ul {
+  padding-left: 0 !important;
+}
+
 .grid-item {
   height: 100%;
 }

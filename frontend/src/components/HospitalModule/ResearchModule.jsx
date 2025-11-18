@@ -1,23 +1,40 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { getResearches } from "../../api/research.js";
 import AddResearchForm from "./AddResearchForm.jsx";
 import ResearchContainer from "./ResearchContainer.jsx";
 
-export default function ResearchModule({ sectionTitleClass }) {
+export default function ResearchModule({ sectionTitleClass, isDark }) {
+  const [researches, setResearches] = useState([]);
+
+  useEffect(() => {
+    async function fetchData() {
+      const data = await getResearches();
+      setResearches(data);
+    }
+    fetchData();
+  }, []);
+
+  const handleResearchAdded = (newResearch) => {
+    setResearches((prev) => [...prev, newResearch]);
+  };
+
   return (
     <div>
-      <h2 className={sectionTitleClass}>Research Modülü</h2>
-      <div className="flex flex-col sm:flex-row gap-6">
+      <div className="flex flex-col sm:flex-row gap-2">
         {/* Solda ekleme */}
-        <div className="sm:w-[40%] w-full">
-          <h3 className="text-lg font-semibold mb-2">Araştırma Ekle</h3>
-          <AddResearchForm />
+        <div className="sm:w-[30%] w-full">
+          <AddResearchForm
+            onResearchAdded={handleResearchAdded}
+            isDark={isDark}
+          />
         </div>
         {/* Sağda listeleme */}
-        <div className="sm:w-[60%] w-full">
-          <h3 className="text-lg font-semibold mb-2 text-center">
-            Araştırma Listesi
-          </h3>
-          <ResearchContainer />
+        <div className="sm:w-[70%] w-full">
+          <ResearchContainer
+            researches={researches}
+            setResearches={setResearches}
+            isDark={isDark}
+          />
         </div>
       </div>
     </div>

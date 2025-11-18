@@ -1,117 +1,94 @@
 import React, { useEffect, useState } from "react";
-import { getDoctors, deleteDoctor, updateDoctor } from "../../api/doctors";
+import { getDoctors } from "../../api/doctors.js";
+import { getDepartments } from "../../api/departments.js";
+import { getLocations } from "../../api/locations.js";
 
-// Gelen veriyi normalize et
-const normalizeDoctor = (raw) => ({
-  id: raw.doctor_id,
-  name: raw.name ?? raw.first_name ?? raw.doctor_name ?? "",
-  surname: raw.surname ?? raw.last_name ?? raw.doctor_surname ?? "",
-  department: raw.department ?? null,
-  location: raw.location ?? null,
-});
-
-function DoctorList({ departmentId, locationId, refresh }) {
+export default function DoctorList({ isDark }) {
   const [doctors, setDoctors] = useState([]);
-  const [editingDoctor, setEditingDoctor] = useState(null);
-  const [editForm, setEditForm] = useState({ name: "", surname: "" });
+  const [departments, setDepartments] = useState([]);
+  const [locations, setLocations] = useState([]);
 
-  // Doktor listesini backend’den çek
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState("");
+
   useEffect(() => {
-    getDoctors(departmentId, locationId)
-      .then((data) => {
-        const normalized = Array.isArray(data) ? data.map(normalizeDoctor) : [];
-        setDoctors(normalized);
-      })
-      .catch(console.error);
-  }, [departmentId, locationId, refresh]);
+    fetchFilters();
+  }, []);
 
-  // Silme işlemi
-  const handleDelete = async (id) => {
-    await deleteDoctor(id);
-    setDoctors((prev) => prev.filter((doc) => doc.id !== id));
-  };
+  useEffect(() => {
+    fetchDoctors();
+  }, [selectedDepartment, selectedLocation]);
 
-  // Güncelleme formunu aç
-  const startEdit = (doc) => {
-    setEditingDoctor(doc.id);
-    setEditForm({ name: doc.name, surname: doc.surname });
-  };
+  async function fetchFilters() {
+    const [deps, locs] = await Promise.all([getDepartments(), getLocations()]);
+    setDepartments(deps);
+    setLocations(locs);
+  }
 
-  // Güncelleme işlemi
-  const handleUpdate = async (id) => {
-    const updated = await updateDoctor(id, editForm);
-    const normalizedUpdated = normalizeDoctor(updated);
+  async function fetchDoctors() {
+    const data = await getDoctors(selectedDepartment, selectedLocation);
+    setDoctors(Array.isArray(data) ? data : []);
+  }
 
-    setDoctors((prev) =>
-      prev.map((doc) =>
-        doc.id === id
-          ? {
-              ...doc,
-              name: normalizedUpdated.name,
-              surname: normalizedUpdated.surname,
-              department: normalizedUpdated.department ?? doc.department,
-              location: normalizedUpdated.location ?? doc.location,
-            }
-          : doc
-      )
-    );
-
-    setEditingDoctor(null);
-    setEditForm({ name: "", surname: "" });
-  };
-
-  // Düzenleme formundaki input değerlerini yönetme
-  const handleEditChange = (field, value) => {
-    setEditForm((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
+  const cardClass = `p-4 rounded-lg border ${
+    isDark ? "bg-[#242424] border-gray-700" : "bg-gray-50 border-gray-200"
+  }`;
+  const titleBg = isDark
+    ? "bg-[#0a3c4a] text-white"
+    : "bg-[#094857] text-white";
 
   return (
-    <div>
-      <h2>Doktorlar</h2>
+    <div className={cardClass}>
+      <div
+        className={`text-lg p-2 rounded-lg mb-4 ${titleBg} flex justify-between items-center`}
+      >
+        <span>Doctors</span>
+      </div>
+
+      {/* Filtreler */}
+      <div className="flex gap-4 mb-4">
+        <select
+          value={selectedLocation}
+          onChange={(e) => setSelectedLocation(e.target.value)}
+          className="border p-2 rounded flex-1"
+        >
+          <option value="">All Locations</option>
+          {locations.map((loc) => (
+            <option key={loc.location_id} value={loc.location_id}>
+              {loc.hospital_name} ({loc.city})
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={selectedDepartment}
+          onChange={(e) => setSelectedDepartment(e.target.value)}
+          className="border p-2 rounded flex-1"
+        >
+          <option value="">All Departments</option>
+          {departments.map((dep) => (
+            <option key={dep.department_id} value={dep.department_id}>
+              {dep.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Liste */}
       {doctors.length === 0 ? (
-        <p>Doktor bulunamadı.</p>
+        <p className="text-gray-500">No doctors found.</p>
       ) : (
-        <ul>
+        <ul className="list-none !pl-0">
           {doctors.map((doc) => (
-            <li key={doc.id}>
-              {editingDoctor === doc.id ? (
-                <div>
-                  <input
-                    placeholder="Ad"
-                    value={editForm.name}
-                    onChange={(e) => handleEditChange("name", e.target.value)}
-                  />
-                  <input
-                    placeholder="Soyad"
-                    value={editForm.surname}
-                    onChange={(e) =>
-                      handleEditChange("surname", e.target.value)
-                    }
-                  />
-                  <button onClick={() => handleUpdate(doc.id)}>Kaydet</button>
-                  <button
-                    onClick={() => {
-                      setEditingDoctor(null);
-                      setEditForm({ name: "", surname: "" });
-                    }}
-                  >
-                    İptal
-                  </button>
-                </div>
-              ) : (
-                <>
-                  {doc.name || "(İsim yok)"} {doc.surname || "(Soyad yok)"} - (
-                  {doc.department?.name ?? "Departman yok"},{" "}
-                  {doc.location?.hospital_name ??
-                    doc.location?.name ??
-                    "Lokasyon yok"}
-                  )<button onClick={() => handleDelete(doc.id)}>Sil</button>
-                  <button onClick={() => startEdit(doc)}>Güncelle</button>
-                </>
-              )}
+            <li key={doc.doctor_id} className="flex flex-col p-2 border-b">
+              <span className="font-medium">
+                {doc.name} {doc.surname}
+              </span>
+              <span className="text-sm text-gray-600 pl-2">
+                {doc.birth_date || "No birth date"} |{" "}
+                {doc.department?.name || "No Department"} |{" "}
+                {doc.location?.hospital_name || "No Location"}
+              </span>
             </li>
           ))}
         </ul>
@@ -119,5 +96,3 @@ function DoctorList({ departmentId, locationId, refresh }) {
     </div>
   );
 }
-
-export default DoctorList;

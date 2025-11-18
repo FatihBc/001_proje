@@ -32,9 +32,9 @@ export default function HospitalModule() {
   };
 
   const navItems = [
-    { id: 1, title: "Yönetici Modül", path: "admin" },
-    { id: 2, title: "Doktor Listesi", path: "doctors" },
-    { id: 3, title: "Araştırma Listesi", path: "researchs" },
+    { id: 1, title: "Admin Module", path: "admin" },
+    { id: 2, title: "Doctors List", path: "doctors" },
+    { id: 3, title: "Researchs List", path: "researchs" },
   ];
 
   return (
