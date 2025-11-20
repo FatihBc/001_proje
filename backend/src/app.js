@@ -18,6 +18,7 @@ const allowedOrigins = [
   "http://localhost:3000",
   "https://001-proje.vercel.app",
   "https://001-proje-hgzhxk86e-fatih-buyukcams-projects.vercel.app",
+  "https://zero01-proje.onrender.com/api/doctors",
 ];
 
 // Middleware
