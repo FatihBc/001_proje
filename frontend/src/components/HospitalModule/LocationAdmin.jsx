@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
-  getLocations,
   addLocation,
   updateLocation,
   deleteLocation,
@@ -8,8 +7,13 @@ import {
 import { FaEdit, FaCheck } from "react-icons/fa";
 import { IoMdRemoveCircle } from "react-icons/io";
 
-export default function LocationAdmin({ isDark }) {
-  const [locations, setLocations] = useState([]);
+export default function LocationAdmin({
+  isDark,
+  locations,
+  onLocationAdded,
+  onLocationDeleted, // 🔧 eksik props eklendi
+  onLocationUpdated, // 🔧 eksik props eklendi
+}) {
   const [editableId, setEditableId] = useState(null);
   const [editValue, setEditValue] = useState("");
 
@@ -19,42 +23,49 @@ export default function LocationAdmin({ isDark }) {
   const [newCity, setNewCity] = useState("");
   const [newAddress, setNewAddress] = useState("");
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  async function fetchData() {
-    const data = await getLocations();
-    setLocations(data);
-  }
-
   async function handleAdd() {
     if (newHospital.trim() && newCity.trim()) {
-      await addLocation({
+      const newLoc = await addLocation({
         hospital_name: newHospital,
         city: newCity,
         address: newAddress || null,
       });
+      onLocationAdded?.(newLoc); // ✅ parent state
       setNewHospital("");
       setNewCity("");
       setNewAddress("");
       setIsModalOpen(false);
-      fetchData();
-    }
-  }
-
-  async function handleUpdate(id) {
-    if (editValue.trim()) {
-      await updateLocation(id, { hospital_name: editValue });
-      setEditableId(null);
-      setEditValue("");
-      fetchData();
     }
   }
 
   async function handleDelete(id) {
     await deleteLocation(id);
-    fetchData();
+    onLocationDeleted?.(id); // ✅ parent state
+    // editable moddan çıkmayı garanti et
+    if (editableId === id) {
+      setEditableId(null);
+      setEditValue("");
+    }
+  }
+
+  async function handleUpdate(id) {
+    if (!editValue.trim()) return;
+
+    // API’nin dönüşü: updated entity (önerilen) — değilse optimistic fallback
+    const updatedLoc = await updateLocation(id, { hospital_name: editValue });
+
+    if (updatedLoc && updatedLoc.location_id) {
+      onLocationUpdated?.(updatedLoc); // ✅ parent state
+    } else {
+      // 🔁 Optimistic fallback: API sadece status dönerse local olarak compose et
+      const existing = locations.find((l) => l.location_id === id);
+      if (existing) {
+        onLocationUpdated?.({ ...existing, hospital_name: editValue });
+      }
+    }
+
+    setEditableId(null);
+    setEditValue("");
   }
 
   const cardClass = `p-4 rounded-lg border ${
@@ -78,12 +89,14 @@ export default function LocationAdmin({ isDark }) {
         </button>
       </div>
 
-      {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-10">
-          <div className={`text-lg p-2 rounded-lg mb-4 ${cardClass}`}>
+          <div
+            className={`text-lg p-4 rounded-lg mb-4 ${cardClass} 
+                  w-[90%] max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl`}
+          >
             <div
-              className={`text-2xl font-semibold mb-4 p-3 bg-[#094857] text-white px-3 rounded w-[36rem] ${titleBg}`}
+              className={`text-2xl font-semibold mb-4 p-3 ${titleBg} text-white rounded`}
             >
               New Location
             </div>
@@ -159,7 +172,10 @@ export default function LocationAdmin({ isDark }) {
                   />
                   <button
                     className="text-gray-600"
-                    onClick={() => setEditableId(null)}
+                    onClick={() => {
+                      setEditableId(null);
+                      setEditValue("");
+                    }}
                   >
                     Cancel
                   </button>

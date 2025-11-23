@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
-  getDepartments,
   addDepartment,
   updateDepartment,
   deleteDepartment,
@@ -8,8 +7,13 @@ import {
 import { FaEdit, FaCheck } from "react-icons/fa";
 import { IoMdRemoveCircle } from "react-icons/io";
 
-export default function DepartmentsAdmin({ isDark }) {
-  const [departments, setDepartments] = useState([]);
+export default function DepartmentsAdmin({
+  isDark,
+  departments,
+  onDepartmentAdded,
+  onDepartmentDeleted, // 🔧 eksik props eklendi
+  onDepartmentUpdated, // 🔧 eksik props eklendi
+}) {
   const [editableId, setEditableId] = useState(null);
   const [editValue, setEditValue] = useState("");
 
@@ -18,40 +22,44 @@ export default function DepartmentsAdmin({ isDark }) {
   const [newName, setNewName] = useState("");
   const [newDescription, setNewDescription] = useState("");
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  async function fetchData() {
-    const data = await getDepartments();
-    setDepartments(data);
-  }
-
   async function handleAdd() {
-    if (newName.trim()) {
-      await addDepartment({
-        name: newName,
-        description: newDescription || null,
-      });
-      setNewName("");
-      setNewDescription("");
-      setIsModalOpen(false);
-      fetchData();
-    }
+    if (!newName.trim()) return;
+    const newDep = await addDepartment({
+      name: newName,
+      description: newDescription || null,
+    });
+    onDepartmentAdded?.(newDep); // ✅ parent state
+    setNewName("");
+    setNewDescription("");
+    setIsModalOpen(false);
   }
 
   async function handleUpdate(id) {
-    if (editValue.trim()) {
-      await updateDepartment(id, { name: editValue });
-      setEditableId(null);
-      setEditValue("");
-      fetchData();
+    if (!editValue.trim()) return;
+
+    const updated = await updateDepartment(id, { name: editValue });
+
+    if (updated && updated.department_id) {
+      onDepartmentUpdated?.(updated); // ✅ parent state
+    } else {
+      // 🔁 Optimistic fallback: API sadece status dönerse mevcut kaydı compose et
+      const existing = departments.find((d) => d.department_id === id);
+      if (existing) {
+        onDepartmentUpdated?.({ ...existing, name: editValue });
+      }
     }
+
+    setEditableId(null);
+    setEditValue("");
   }
 
   async function handleDelete(id) {
     await deleteDepartment(id);
-    fetchData();
+    onDepartmentDeleted?.(id); // ✅ parent state
+    if (editableId === id) {
+      setEditableId(null);
+      setEditValue("");
+    }
   }
 
   const cardClass = `p-4 rounded-lg border ${
@@ -75,12 +83,14 @@ export default function DepartmentsAdmin({ isDark }) {
         </button>
       </div>
 
-      {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-10">
-          <div className={`text-lg p-2 rounded-lg mb-4 ${cardClass}`}>
+          <div
+            className={`text-lg p-4 rounded-lg mb-4 ${cardClass} 
+                  w-[90%] max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl`}
+          >
             <div
-              className={`text-2xl font-semibold mb-4 p-3 bg-[#094857] text-white px-3 rounded w-[36rem] ${titleBg}`}
+              className={`text-2xl font-semibold mb-4 p-3 ${titleBg} text-white rounded`}
             >
               New Department
             </div>
@@ -149,7 +159,10 @@ export default function DepartmentsAdmin({ isDark }) {
                   />
                   <button
                     className="text-gray-600"
-                    onClick={() => setEditableId(null)}
+                    onClick={() => {
+                      setEditableId(null);
+                      setEditValue("");
+                    }}
                   >
                     Cancel
                   </button>

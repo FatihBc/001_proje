@@ -12,7 +12,7 @@ const normalizeDoctor = (raw) => ({
   location: raw.location ?? null,
 });
 
-function AddDoctorForm({ onDoctorAdded }) {
+function AddDoctorForm({ onDoctorAdded, departments, locations }) {
   const [form, setForm] = useState({
     name: "",
     surname: "",
@@ -27,11 +27,7 @@ function AddDoctorForm({ onDoctorAdded }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newDoctor = await addDoctor(form);
-
-    // Normalize edip üst bileşene gönder
     onDoctorAdded(normalizeDoctor(newDoctor));
-
-    // Formu temizle
     setForm({ name: "", surname: "", department_id: "", location_id: "" });
   };
 
@@ -53,11 +49,13 @@ function AddDoctorForm({ onDoctorAdded }) {
       />
 
       <DepartmentDropdown
+        departments={departments} // 🔑 güncel liste props’tan
         selectedDepartment={form.department_id}
         onSelect={(id) => setForm((prev) => ({ ...prev, department_id: id }))}
       />
 
       <LocationDropdown
+        locations={locations} // 🔑 güncel liste props’tan
         selectedLocation={form.location_id}
         onSelect={(id) => setForm((prev) => ({ ...prev, location_id: id }))}
       />

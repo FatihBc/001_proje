@@ -5,16 +5,16 @@ import {
   updateDoctor,
   deleteDoctor,
 } from "../../api/doctors.js";
-import { getDepartments } from "../../api/departments.js";
-import { getLocations } from "../../api/locations.js";
 import { FaEdit, FaCheck } from "react-icons/fa";
 import { IoMdRemoveCircle } from "react-icons/io";
 
-export default function DoctorsAdmin({ isDark }) {
-  const [doctors, setDoctors] = useState([]);
-  const [departments, setDepartments] = useState([]);
-  const [locations, setLocations] = useState([]);
-
+export default function DoctorsAdmin({
+  isDark,
+  doctors,
+  setDoctors,
+  departments,
+  locations,
+}) {
   const [editableId, setEditableId] = useState(null);
   const [editName, setEditName] = useState("");
   const [editSurname, setEditSurname] = useState("");
@@ -27,25 +27,14 @@ export default function DoctorsAdmin({ isDark }) {
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
 
+  // Doktorları sadece burada fetch ediyoruz
   useEffect(() => {
     fetchData();
-    fetchDepartments();
-    fetchLocations();
   }, []);
 
   async function fetchData() {
     const docs = await getDoctors();
     setDoctors(docs);
-  }
-
-  async function fetchDepartments() {
-    const deps = await getDepartments();
-    setDepartments(deps);
-  }
-
-  async function fetchLocations() {
-    const locs = await getLocations();
-    setLocations(locs);
   }
 
   async function handleAdd() {
@@ -109,9 +98,12 @@ export default function DoctorsAdmin({ isDark }) {
       {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-10">
-          <div className={`text-lg p-2 rounded-lg mb-4 ${cardClass}`}>
+          <div
+            className={`text-lg p-4 rounded-lg mb-4 ${cardClass} 
+                  w-[90%] max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl`}
+          >
             <div
-              className={`text-2xl font-semibold mb-4 p-3 bg-[#094857] text-white px-3 rounded w-[36rem] ${titleBg}`}
+              className={`text-2xl font-semibold mb-4 p-3 ${titleBg} text-white rounded`}
             >
               New Doctor
             </div>
@@ -145,7 +137,7 @@ export default function DoctorsAdmin({ isDark }) {
                 className="border p-2 rounded"
               >
                 <option value="">Select Department</option>
-                {departments.map((dep) => (
+                {(departments || []).map((dep) => (
                   <option key={dep.department_id} value={dep.department_id}>
                     {dep.name}
                   </option>
@@ -159,7 +151,7 @@ export default function DoctorsAdmin({ isDark }) {
                 className="border p-2 rounded"
               >
                 <option value="">Select Location</option>
-                {locations.map((loc) => (
+                {(locations || []).map((loc) => (
                   <option key={loc.location_id} value={loc.location_id}>
                     {loc.hospital_name} ({loc.city})
                   </option>
